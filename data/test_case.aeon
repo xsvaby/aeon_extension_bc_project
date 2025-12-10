@@ -1,0 +1,36 @@
+#position:Infliximab_drug:538.0840728381326,96.19744963119237
+#!control:Infliximab_drug:true,null
+#position:TNF:815.2839532377035,98.99151169057413
+#!control:TNF:true,null
+$TNF:!Infliximab_drug
+Infliximab_drug -| TNF
+#position:TNFRSF1A:813.8641870491861,188.99151169057413
+#!control:TNFRSF1A:true,null
+$TNFRSF1A:TNF
+TNF -> TNFRSF1A
+#position:IKBKB:813.6095377664101,264.0339532377035
+#!control:IKBKB:true,null
+$IKBKB:TNFRSF1A
+TNFRSF1A -> IKBKB
+#position:NFKBIA:811.2530287705237,341.0933714036846
+#!control:NFKBIA:true,null
+$NFKBIA:!IKBKB
+IKBKB -| NFKBIA
+#position:NFKB1:1040.5325449794323,342.14430126023973
+#!control:NFKB1:true,null
+$NFKB1:IKBKB & !NFKBIA
+IKBKB -> NFKB1
+NFKBIA -| NFKB1
+#position:CASP8:1040.8286132992303,189.08650360651114
+#!control:CASP8:true,null
+$CASP8:TNFRSF1A & NFKB1
+TNFRSF1A -> CASP8
+NFKB1 -> CASP8
+#position:Apoptosis:1254.6382437191926,102.49999999999999
+#!control:Apoptosis:true,null
+$Apoptosis:CASP8
+CASP8 -> Apoptosis
+#position:Survival:1253.3033606249337,304.30476888320504
+#!control:Survival:true,null
+$Survival:!CASP8
+CASP8 -| Survival
