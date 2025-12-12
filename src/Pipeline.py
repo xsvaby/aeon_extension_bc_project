@@ -91,9 +91,7 @@ def pipeline(
 
         new_psbn_instance.set_color(color)
 
-        print("Goterm intersection on instance:", new_psbn_instance.goterm_name_intersection())
         append_column_to_xlsx(f"{net_name}_OnInstance.xlsx", new_psbn_instance.goterm_id_intersection(), column_name=(f"[{color_index}]"))
         psbn.add_instance(new_psbn_instance)
 
-    print("Goterm intersection on all instances:", psbn.goterms_name_intersection_on_all_instances())
     append_column_to_xlsx(f"{net_name}_OnAllInstances.xlsx", psbn.goterms_id_intersection_on_all_instances(), column_name="[whole]")

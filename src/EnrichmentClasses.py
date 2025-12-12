@@ -107,7 +107,7 @@ class EnrichmentPSBN:
 
         return intersected_goterms
 
-    def count_go_ids_frequencies_on_all_instances(self) -> Dict[str, int]:
+    def count_go_ids_frequencies_in_all_instances(self) -> Dict[str, int]:
         """
         Count how often each GO term appears across all PSBN instances.
 
@@ -131,13 +131,13 @@ class EnrichmentPSBN:
 
         return frequencies
     
-    def count_goterms_frequencies_on_all_instances(self) -> Dict[EnrichmentGOterm, int]:
+    def count_goterms_frequencies_in_all_instances(self) -> Dict[EnrichmentGOterm, int]:
         """
         Convert aggregated GO-term ID frequencies across all instances into
         actual GO-term object frequencies.
 
         This method:
-        1. Retrieves GO-term ID frequencies using `count_go_ids_frequencies_on_all_instances()`
+        1. Retrieves GO-term ID frequencies using `count_go_ids_frequencies_in_all_instances()`
         2. Converts each GO ID into its corresponding `EnrichmentGOterm` object
         using `get_all_goterms()`
         3. Returns a dictionary keyed by GO-term objects instead of IDs
@@ -147,7 +147,7 @@ class EnrichmentPSBN:
         dict[EnrichmentGOterm, int]
             Mapping from GO-term objects to their total frequency across all instances.
         """
-        frequencies_go_ids: Dict[str, int] = self.count_go_ids_frequencies_on_all_instances()
+        frequencies_go_ids: Dict[str, int] = self.count_go_ids_frequencies_in_all_instances()
         frequencies_goterms: Dict[EnrichmentGOterm, int] = {}
 
         for go_id, frequency in frequencies_go_ids.items():
@@ -168,6 +168,24 @@ class EnrichmentPSBN:
 
             for j, attractor in enumerate(instance.attractors):
                 print(f"{attractor.unmapped_ids} [{j}]")
+            
+            print("---------")
+    
+    def print_only_output_unmapped_ids_per_instance_per_attractor(self, output_nodes: Set[str]) -> None:
+        """
+        Print output unmapped IDs for each attractor within each PSBN instance.
+
+        The output is grouped first by instance (with its color), and then
+        by attractor index within that instance.
+        """
+        for i, instance in enumerate(self.instances):
+            print(f"{i}: {instance.color}")
+
+            for j, attractor in enumerate(instance.attractors):
+                filtered_to_only_outputs = [node for node in attractor.unmapped_ids_set if node in output_nodes]
+                print(f"{filtered_to_only_outputs} [{j}]")
+            
+            print("---------")
 
 
     def unmapped_ids_intersection_on_all_instances(self) -> Set[str]:
@@ -195,8 +213,31 @@ class EnrichmentPSBN:
 
         return intersected
 
+    def _count_ids_frequencies_in_all_instances(self, method_name: str) -> Dict[str, int]:
+        """
+        Internal helper to aggregate ID frequencies across all instances.
 
-    def count_unmapped_ids_frequencies_on_all_instances(self) -> Dict[str, int]:
+        Parameters
+        ----------
+        method_name : str
+            Name of the method on each instance that returns a frequency dict.
+
+        Returns
+        -------
+        dict[str, int]
+            Aggregated mapping of IDs to their total frequency across all instances.
+        """
+        frequencies: Dict[str, int] = {}
+
+        for instance in self.instances:
+            instance_frequencies = getattr(instance, method_name)()
+
+            for _id, freq in instance_frequencies.items():
+                frequencies[_id] = frequencies.get(_id, 0) + freq
+
+        return frequencies
+
+    def count_unmapped_ids_frequencies_in_all_instances(self) -> Dict[str, int]:
         """
         Count how often each unmapped ID appears across all PSBN instances.
 
@@ -208,16 +249,21 @@ class EnrichmentPSBN:
         dict[str, int]
             Mapping of unmapped IDs to their total frequency across all instances.
         """
-        frequencies: Dict[str, int] = {}
+        return self._count_ids_frequencies_in_all_instances("count_unmapped_ids_frequencies")
 
-        for instance in self.instances:
-            instance_frequencies = instance.count_unmapped_ids_frequencies()
+    def count_mapped_ids_frequencies_in_all_instances(self) -> Dict[str, int]:
+        """
+        Count how often each mapped ID appears across all PSBN instances.
 
-            for unmapped_id, frequency in instance_frequencies.items():
-                frequencies[unmapped_id] = frequencies.get(unmapped_id, 0) + frequency
+        The frequencies from each instance are aggregated into a single
+        global frequency dictionary.
 
-        return frequencies
-
+        Returns
+        -------
+        dict[str, int]
+            Mapping of mapped IDs to their total frequency across all instances.
+        """
+        return self._count_ids_frequencies_in_all_instances("count_mapped_ids_frequencies")
 
     def count_attractors(self) -> int:
         """
@@ -343,31 +389,6 @@ class EnrichmentPSBNInstance:
 
         return intersected_goterms
 
-    def goterm_unique(self) -> List[Set[str]]:
-        """
-        Compute GO terms that are unique to each attractor.
-
-        For each attractor, returns a set of GO IDs that only appear in that
-        attractor and not in any of the others.
-
-        Returns
-        -------
-        list[set[str]]
-            A list of sets of GO IDs, one set per attractor.
-        """
-        unique: List[Set[str]] = []
-
-        for attractor in self.attractors:
-            unique_set: Set[str] = set(attractor.go_terms_set)
-            for attractor2 in self.attractors:
-                if attractor == attractor2:
-                    continue
-                unique_set = unique_set.difference(attractor2.go_terms_set)
-
-            unique.append(unique_set)
-
-        return unique
-
     def count_go_ids_frequencies(self) -> Dict[str, int]:
         """
         Count how often each GO term appears across all attractors.
@@ -433,6 +454,28 @@ class EnrichmentPSBNInstance:
 
         return intersect
 
+    def _count_id_frequencies(self, attr_name: str) -> Dict[str, int]:
+        """
+        Internal helper to count frequencies of IDs across attractors.
+
+        Parameters
+        ----------
+        attr_name : str
+            Name of the attribute on each attractor that holds a set of IDs.
+
+        Returns
+        -------
+        dict[str, int]
+            Mapping of IDs to the number of attractors in which they appear.
+        """
+        frequencies: Dict[str, int] = {}
+
+        for attractor in self.attractors:
+            ids_set = getattr(attractor, attr_name)
+            for id in ids_set:
+                frequencies[id] = frequencies.get(id, 0) + 1
+
+        return frequencies
 
     def count_unmapped_ids_frequencies(self) -> Dict[str, int]:
         """
@@ -446,13 +489,21 @@ class EnrichmentPSBNInstance:
         dict[str, int]
             Mapping of unmapped IDs to the number of attractors in which they appear.
         """
-        frequencies: Dict[str, int] = {}
+        return self._count_id_frequencies("unmapped_ids_set")
 
-        for attractor in self.attractors:
-            for unmapped_id in attractor.unmapped_ids_set:
-                frequencies[unmapped_id] = frequencies.get(unmapped_id, 0) + 1
+    def count_mapped_ids_frequencies(self) -> Dict[str, int]:
+        """
+        Count how often each mapped ID appears across attractors
+        in a single PSBN instance.
 
-        return frequencies
+        Each attractor contributes at most one count per mapped ID.
+
+        Returns
+        -------
+        dict[str, int]
+            Mapping of mapped IDs to the number of attractors in which they appear.
+        """
+        return self._count_id_frequencies("mapped_ids_set")
 
     def __str__(self) -> str:
         result: str = "PSBN instance \n"
@@ -504,6 +555,7 @@ class EnrichmentAttractor:
         self.mapped_ids: str = ""
         self.unmapped_ids: str = ""
         self.unmapped_ids_set: Set[str] = set()
+        self.mapped_ids_set: Set[str] = set()
 
         if enrichment_result is None:
             return
@@ -511,6 +563,7 @@ class EnrichmentAttractor:
         self.mapped_ids = enrichment_result.mapped_ids
         self.unmapped_ids = enrichment_result.unmapped_ids
         self.unmapped_ids_set = {unmapped for unmapped in self.unmapped_ids.split(",")}
+        self.mapped_ids_set = {mapped for mapped in self.mapped_ids.split(",")}
 
 
         # Populate GO terms from enrichment result, with FDR filter
