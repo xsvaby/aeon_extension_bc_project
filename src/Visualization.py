@@ -9,6 +9,7 @@ from typing import Dict, List, Set, Tuple, Any, Iterable
 from SPARQLWrapper import JSON
 import networkx as nx
 import matplotlib.pyplot as plt
+import numpy as np
 
 from EnrichmentClasses import EnrichmentGOterm, EnrichmentPSBN
 
@@ -79,6 +80,23 @@ def get_quickgo_terms_batch(go_ids: Set[str]) -> List[Dict[str, Any]]:
     return data.get("results", [])
 
 
+def clean_nodes_parents_and_children(intersected_goterms: Dict[str, EnrichmentGOterm]) -> None:
+    """
+    Remove parent and child relationships from GO terms.
+
+    Parameters
+    ----------
+    intersected_goterms : Dict[str, EnrichmentGOterm]
+        Dictionary of GO term identifiers mapped to `EnrichmentGOterm` objects.
+        The `parents` and `children` attributes of each GO term are cleared
+        in-place.
+    """
+    for goterm in intersected_goterms.values():
+        goterm.children = {}
+        goterm.parents = {}
+
+
+
 def set_nodes_for_graph(intersected_goterms: Dict[str, EnrichmentGOterm]) -> None:
     """
     Populate parent/child relationships among intersected GO terms
@@ -93,6 +111,7 @@ def set_nodes_for_graph(intersected_goterms: Dict[str, EnrichmentGOterm]) -> Non
     intersected_goterms : dict[str, EnrichmentGOterm]
         Mapping of GO IDs to GO term objects that are part of the intersection.
     """
+    clean_nodes_parents_and_children(intersected_goterms)
     intersected_go_ids: Set[str] = set(intersected_goterms.keys())
     terms: List[Dict[str, Any]] = get_quickgo_terms_batch(intersected_go_ids)
 
@@ -277,6 +296,7 @@ def print_roots_and_leafs_on_whole_net(psbn: EnrichmentPSBN) -> None:
         PSBN object containing enrichment analysis.
     """
     goterm_intersection = psbn.goterms_intersection_on_all_instances()
+    set_nodes_for_graph(goterm_intersection)
     roots, leafs = get_roots_and_leafs(goterm_intersection)
     sorted_roots, sorted_leafs = sort_roots_and_leafs(roots, leafs)
 
@@ -317,6 +337,7 @@ def print_roots_and_leafs_per_instance(psbn: EnrichmentPSBN) -> None:
     """
     for psbn_instance in psbn.instances:
         goterm_intersection = psbn_instance.goterm_intersection()
+        set_nodes_for_graph(goterm_intersection)
 
         print(psbn_instance.color)
 
@@ -325,3 +346,77 @@ def print_roots_and_leafs_per_instance(psbn: EnrichmentPSBN) -> None:
 
         print(f"{len(sorted_leafs)} leafs: {sorted_leafs}")
         print(f"{len(sorted_roots)} roots: {sorted_roots}")
+  
+
+def visualize_nodes_frequencies(psbn: EnrichmentPSBN, nodes_freqs: Dict[str, int], plot_title: str) -> None:
+    """
+    Visualize node frequencies across attractors for all PSBN instances.
+
+    Parameters
+    ----------
+    psbn : EnrichmentPSBN
+        PSBN object containing multiple enrichment instances. Node frequencies
+        are computed from both mapped and unmapped identifiers and displayed
+        as a bar chart.
+    nodes_freqs : Dict[str, int]
+        Dictionary mapping node identifiers to their frequency of appearance
+        across attractors.
+    plot_title : str
+        Title of a resulting plot
+    """
+    sorted_nodes_freqs = dict(
+        sorted(nodes_freqs.items(), key=lambda item: item[1], reverse=True)
+    )
+
+    categories = sorted_nodes_freqs.keys()
+    values = sorted_nodes_freqs.values()
+
+    x = np.arange(len(categories)) * 2
+    width = 1
+
+    plt.figure(figsize=(16, 6))
+
+    bars = plt.bar(x, values, width=width)
+
+    plt.xlabel('Node')
+    plt.ylabel('Frequnecy')
+    plt.title(plot_title)
+
+    plt.xticks(x, categories)
+    plt.bar_label(bars, padding=3)
+
+    plt.show()
+
+
+def visualize_mapped_nodes_frequencies(psbn: EnrichmentPSBN) -> None:
+    """
+    Visualize frequencies of mapped node identifiers across attractors.
+
+    Parameters
+    ----------
+    psbn : EnrichmentPSBN
+        PSBN object containing multiple enrichment instances. Frequencies
+        are computed using mapped identifiers only and displayed as a bar chart.
+    """
+    visualize_nodes_frequencies(
+        psbn,
+        psbn.count_mapped_ids_frequencies_in_all_instances(),
+        'Fruqencies of mapped nodes in attractors across instances'
+    )
+
+
+def visualize_unmapped_nodes_frequencies(psbn: EnrichmentPSBN) -> None:
+    """
+    Visualize frequencies of unmapped node identifiers across attractors.
+
+    Parameters
+    ----------
+    psbn : EnrichmentPSBN
+        PSBN object containing multiple enrichment instances. Frequencies
+        are computed using unmapped identifiers only and displayed as a bar chart.
+    """
+    visualize_nodes_frequencies(
+        psbn,
+        psbn.count_unmapped_ids_frequencies_in_all_instances(),
+        'Fruqencies of unmapped nodes in attractors across instances'
+    )

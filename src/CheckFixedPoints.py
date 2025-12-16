@@ -39,5 +39,6 @@ def print_fixed_points_on_new_stg(bn: Any) -> None:
             if binary_state == 1:
                 fp_vertices_on.add(vertex)
 
-        print(fp_vertices_on)
+        formatted_fp_vertices_on = "{" + ", ".join(sorted(fp_vertices_on)) + "}"
+        print(formatted_fp_vertices_on)
     print("------")
