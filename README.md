@@ -14,10 +14,10 @@ This project was developed and tested on Google Colab. Follow the instructions b
 Google Colab already provides most system dependencies and works out of the box.
 Step 1: Open a New Colab Notebook - https://colab.research.google.com
 Step 2: Install Dependencies
-!pip install biodivine_aeon==1.3.0a3 -qq
-!pip install SPARQLWrapper networkx matplotlib -qq
-!apt-get install graphviz graphviz-dev -y -qq
-!pip install pygraphviz -qq
+- !pip install biodivine_aeon==1.3.0a3 -qq
+- !pip install SPARQLWrapper networkx matplotlib -qq
+- !apt-get install graphviz graphviz-dev -y -qq
+- !pip install pygraphviz -qq
 
 Step 3: Import Modules
 from biodivine_aeon import *
@@ -50,32 +50,32 @@ Note: Native Windows is not supported due to pygraphviz.
 Use WSL2, Docker, or Google Colab instead.
 
 1. System Requirements
-Python 3.9 – 3.11
-pip
+- Python 3.9 – 3.11
+- pip
 Graphviz system libraries
 
 2. Install System Dependencies
-- Ubuntu / Debian / WSL
-sudo apt update
-sudo apt install -y graphviz graphviz-dev python3-dev
+Ubuntu / Debian / WSL:
+- sudo apt update
+- sudo apt install -y graphviz graphviz-dev python3-dev
 
-- macOS (Homebrew)
-brew install graphviz
+macOS (Homebrew):
+- brew install graphviz
 
 3. (Optional) Create a Virtual Environment
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
+- python3 -m venv venv
+- source venv/bin/activate
+- pip install --upgrade pip
 
 4. Install Python Dependencies
-pip install biodivine_aeon==1.3.0a3
-pip install SPARQLWrapper networkx matplotlib
-pip install pygraphviz
+- pip install biodivine_aeon==1.3.0a3
+- pip install SPARQLWrapper networkx matplotlib
+- pip install pygraphviz
 
 5. Verify Installation
-import biodivine_aeon
-import pygraphviz
-import networkx
+- import biodivine_aeon
+- import pygraphviz
+- import networkx
 
 If no errors occur, the installation was successful.
 
@@ -86,8 +86,8 @@ This usually means Graphviz headers are missing.
 
 Fix (Ubuntu / WSL):
 
-sudo apt install graphviz graphviz-dev
-pip install --no-cache-dir pygraphviz
+- sudo apt install graphviz graphviz-dev
+- pip install --no-cache-dir pygraphviz
 
 ------------------------------------------------------------------------
 ## Project Structure
