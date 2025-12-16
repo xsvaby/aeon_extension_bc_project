@@ -152,9 +152,9 @@ pathway
 ### `output_excel_files/`
 
 Pipeline generated **Excel reports**:
-- `*_OnAllInstances.xlsx` → Whole network intersetion of GO terms
-- `*_OnInstance.xlsx` → Single network instance intersections of GO terms
-- `*_OnAttractors.xlsx` → Per attractor per instance GO terms
+- `*_OnAllInstances.xlsx` → Whole network intersection of GO terms
+- `*_OnInstance.xlsx` → Single network instance intersections of GO terms; 1 column = 1 instance
+- `*_OnAttractors.xlsx` → Per attractor per instance GO terms; 1 column = 1 attractor, in the column name -> number of color (instance) + number of attractor
 
 "*" stands for shortcut name of input pathways in case studies
 
