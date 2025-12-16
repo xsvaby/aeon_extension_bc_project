@@ -153,7 +153,7 @@ pathway
 
 Pipeline generated **Excel reports**:
 - `*_OnAllInstances.xlsx` → Whole network intersetion of GO terms
-- `*_OnInstance.xlsx` → Single network instances intersections of GO terms
+- `*_OnInstance.xlsx` → Single network instance intersections of GO terms
 - `*_OnAttractors.xlsx` → Per attractor per instance GO terms
 
 "*" stands for shortcut name of input pathways in case studies
@@ -165,11 +165,11 @@ Pipeline generated **Excel reports**:
 Core Python implementation:
 
   ------------------------ ----------------------------
-  `Pipeline.py`            Main flow
-  `CheckFixedPoints.py`    Fixed-point computation
-  `Enrichment.py`          Enrichment analysis
-  `EnrichmentClasses.py`   Supporting data structures
-  `Visualization.py`       Graphing & visualizing results
+  - `Pipeline.py`            Main flow
+  - `CheckFixedPoints.py`    Fixed-point computation
+  - `Enrichment.py`          Enrichment analysis
+  - `EnrichmentClasses.py`   Supporting data structures
+  - `Visualization.py`       Graphing & visualizing results
 
 ------------------------------------------------------------------------
 ## Workflow
